@@ -7,16 +7,26 @@ import (
 	"time"
 )
 
+type TokenStore struct {
+	issued map[string]time.Time
+}
+
+var store *TokenStore
+
 func issueToken(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
+	token := "tok_" + time.Now().Format("20060102150405")
+	expiresAt := time.Now().Add(24 * time.Hour).UTC()
+	store.issued[token] = expiresAt
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{
-		"token":      "tok_placeholder",
-		"expires_at": time.Now().Add(24 * time.Hour).UTC().Format(time.RFC3339),
+		"token":      token,
+		"expires_at": expiresAt.Format(time.RFC3339),
 	})
 }
 
